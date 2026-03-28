@@ -5,6 +5,7 @@ import { Layout } from './components/Layout';
 import { QAView } from './components/QAView';
 import { OKRView } from './components/OKRView';
 import { GraphView } from './components/GraphView';
+import { ThreeGraphView } from './components/ThreeGraphView';
 import { FailureQueue } from './components/FailureQueue';
 import { DashboardView } from './components/DashboardView';
 import { SettingsView } from './components/SettingsView';
@@ -15,8 +16,8 @@ import { ViewMode } from './types';
 import { useQASystem } from './hooks/useQASystem';
 
 export default function App() {
-  // CHANGED: Default view is now GRAPH (The Helix) to satisfy "Show me the effect" immediately.
-  const [view, setView] = useState<ViewMode>(ViewMode.DASHBOARD);
+  const [view, setView] = useState<ViewMode>(ViewMode.GRAPH);
+  const [viewDimension, setViewDimension] = useState<'2D' | '3D'>('3D');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGitOpen, setIsGitOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -88,11 +89,39 @@ export default function App() {
           onToggleKR={actions.toggleKRStatus}
         />;
       case ViewMode.GRAPH:
-        return <GraphView 
-           questions={data.questions} 
-           objectives={data.objectives} 
-           onNodeAction={handleGraphAction}
-        />;
+        return (
+          <div className="w-full h-full relative">
+            {/* View Mode Toggle */}
+            <div className="absolute top-4 right-4 z-[60] flex bg-black/40 backdrop-blur-xl border border-white/10 rounded-full p-1 shadow-2xl">
+              <button 
+                onClick={() => setViewDimension('3D')}
+                className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all ${viewDimension === '3D' ? 'bg-white/20 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+              >
+                3D CORE
+              </button>
+              <button 
+                onClick={() => setViewDimension('2D')}
+                className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all ${viewDimension === '2D' ? 'bg-white/20 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+              >
+                2D MAP
+              </button>
+            </div>
+
+            {viewDimension === '3D' ? (
+              <ThreeGraphView 
+                questions={data.questions} 
+                objectives={data.objectives} 
+                onNodeAction={handleGraphAction}
+              />
+            ) : (
+              <GraphView 
+                questions={data.questions} 
+                objectives={data.objectives} 
+                onNodeAction={handleGraphAction}
+              />
+            )}
+          </div>
+        );
       case ViewMode.FAILURE_QUEUE:
         return <FailureQueue failures={data.failures} onSediment={handleSediment} />;
       case ViewMode.SETTINGS:

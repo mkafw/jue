@@ -7,9 +7,9 @@ import { DomainRules } from '../services/DomainRules';
 interface CreationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateQuestion: (q: Question) => Promise<void>;
-  onCreateObjective: (o: Objective) => Promise<void>;
-  onCreateFailure: (f: Failure) => Promise<void>;
+  onCreateQuestion: (q: Question) => Promise<boolean>;
+  onCreateObjective: (o: Objective) => Promise<boolean>;
+  onCreateFailure: (f: Failure) => Promise<boolean>;
 }
 
 type TabType = 'QA' | 'OKR' | 'FAILURE';

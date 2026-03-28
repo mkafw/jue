@@ -1,7 +1,8 @@
 
 import { Question, Objective, Failure, IRepository, KeyResult } from '../types';
 
-const API_BASE = 'https://qa-os-api.tiklt1.workers.dev/api/issues';
+const WORKERS_URL = import.meta.env.VITE_WORKERS_URL || 'https://qa-os-api.tiklt1.workers.dev';
+const API_BASE = "/api/issues";
 
 async function fetchAPI(method: string, endpoint: string = '', data?: any): Promise<any> {
   const url = endpoint ? `${API_BASE}/${endpoint}` : API_BASE;

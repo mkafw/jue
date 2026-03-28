@@ -50,20 +50,14 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
       return await handleSessions(request, env, octokit);
     }
 
-    if (path === '/api/health') {
+    if (path === '/health' || path === '/') {
       return new Response(JSON.stringify({ 
         status: 'ok', 
         timestamp: new Date().toISOString(),
-        mode: 'integrated-3d-helix',
         endpoints: ['/api/issues', '/api/sessions', '/api/ai']
       }), {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
-    }
-
-    // For everything else, fall through to static assets (if not an API call)
-    if (!path.startsWith(API_BASE)) {
-        return undefined as any; 
     }
 
     return new Response(JSON.stringify({ error: 'Not Found' }), {
@@ -82,11 +76,6 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const response = await handleRequest(request, env);
-    if (!response) {
-      // Return 404 so that Assets can take over
-      return new Response("Not Found", { status: 404 });
-    }
-    return response;
+    return handleRequest(request, env);
   },
 };

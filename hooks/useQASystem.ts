@@ -16,7 +16,7 @@ export const useQASystem = () => {
   
   // Repository Factory Logic
   const [repo] = useState<IRepository>(() => {
-    const workersUrl = import.meta.env.VITE_WORKERS_URL;
+    const workersUrl = import.meta.env.VITE_WORKERS_URL || 'https://qa-os-api.tiklt1.workers.dev';
     console.log(`[QA-OS] System initializing. Mode: ${workersUrl ? 'Workers + GitHub' : 'PROTOTYPE (Memory)'}`);
     return workersUrl ? WorkersRepository : MemoryRepository;
   });

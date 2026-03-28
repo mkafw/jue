@@ -1,3 +1,4 @@
+
 import { Ai } from '@cloudflare/ai';
 import { handleIssues } from './handlers/issues';
 import { handleSessions } from './handlers/sessions';
@@ -14,7 +15,8 @@ export interface Env {
 
 const API_BASE = '/api';
 
-async function handleRequest(request: Request, env: Env): Promise<Response> {
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const { request, env } = context;
   const url = new URL(request.url);
   const path = url.pathname;
 
@@ -28,6 +30,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // AI Endpoint
   if (path.startsWith(`${API_BASE}/ai`)) {
     return await handleAI(request, env);
   }
@@ -42,28 +45,26 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   try {
     const octokit = new Octokit({ auth: env.GITHUB_TOKEN });
     
+    // Issues Endpoint
     if (path.startsWith(`${API_BASE}/issues`)) {
       return await handleIssues(request, env, octokit);
     }
 
+    // Sessions Endpoint
     if (path.startsWith(`${API_BASE}/sessions`)) {
       return await handleSessions(request, env, octokit);
     }
 
-    if (path === '/api/health') {
+    // Health / Root
+    if (path === '/api/health' || path === '/api') {
       return new Response(JSON.stringify({ 
         status: 'ok', 
         timestamp: new Date().toISOString(),
-        mode: 'integrated-3d-helix',
+        type: 'integrated-pages-functions',
         endpoints: ['/api/issues', '/api/sessions', '/api/ai']
       }), {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
-    }
-
-    // For everything else, fall through to static assets (if not an API call)
-    if (!path.startsWith(API_BASE)) {
-        return undefined as any; 
     }
 
     return new Response(JSON.stringify({ error: 'Not Found' }), {
@@ -78,15 +79,4 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
-}
-
-export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const response = await handleRequest(request, env);
-    if (!response) {
-      // Return 404 so that Assets can take over
-      return new Response("Not Found", { status: 404 });
-    }
-    return response;
-  },
 };

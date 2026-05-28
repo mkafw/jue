@@ -5,7 +5,7 @@ on:
 
 jobs:
   sync:
-    if: contains(github.event.issue.labels.*.name, 'type:question')
+    if: github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'type:question')
     runs-on: ubuntu-latest
     steps:
       - name: Create Issue in Knowledge Helix

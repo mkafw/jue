@@ -1,0 +1,23 @@
+name: Sync QA to Knowledge Helix
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  sync:
+    if: contains(github.event.issue.labels.*.name, 'type:question')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Issue in Knowledge Helix
+        env:
+          GH_TOKEN: ${{ secrets.PAT_CROSS_REPO }}
+        run: |
+          BODY="From QA-OS
+
+          Original: mkafw/-QA-#${{ github.event.issue.number }}
+          Link: https://github.com/mkafw/-QA-/issues/${{ github.event.issue.number }}
+
+          ---
+
+          ${{ github.event.issue.body }}"
+          gh issue create -R mkafw/knowledge-helix -t "QA: ${{ github.event.issue.title }}" -l "status/todo,auto/qa" -b "$BODY"

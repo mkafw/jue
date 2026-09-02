@@ -127,7 +127,7 @@ export class NodeSystem {
     selection
       .select('.label')
       .text((d) => (d.isGhost ? '' : d.label.length > 15 ? d.label.substring(0, 12) + '…' : d.label))
-      .attr('opacity', (d) => {
+      .attr('opacity', (d: any) => {
         const isSelected = selectedId === d.id;
         const isActive = activeId === d.id;
 

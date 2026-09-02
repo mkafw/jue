@@ -1,5 +1,0 @@
-{
-  "name": "QA-OS: Dual-Core Learning System",
-  "description": "A personal learning system integrating FAQ and OKR methodologies with a dual-core driver, featuring bi-directional linking, failure sedimentation, and knowledge graph visualization.",
-  "requestFramePermissions": []
-}

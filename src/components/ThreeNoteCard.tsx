@@ -46,7 +46,6 @@ export const ThreeNoteCard: React.FC<ThreeNoteCardProps> = ({
     }
   });
 
-  // 卡片基础尺寸（随 size 缩放）
   const cardW = 2 * size;
   const cardH = 1.2 * size;
   const titleSize = 0.12 * size;
@@ -93,9 +92,8 @@ export const ThreeNoteCard: React.FC<ThreeNoteCardProps> = ({
             <Text
               position={[0, -cardH * 0.35, 0.04]}
               fontSize={typeSize}
-              color="#F6F3F8"
+              color="#D8D2DE"
               anchorX="center"
-              opacity={0.7}
             >
               {node.type}
             </Text>

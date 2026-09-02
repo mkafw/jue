@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans font-light;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(168, 140, 82, 0.02) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(161, 148, 173, 0.02) 0%, transparent 50%);
+  }
+
+  ::selection {
+    @apply bg-gold/20 text-ink;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-line rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-faint;
+  }
+}
+
+@layer components {
+  /* 复古电影票根标签 */
+  .ticket-label {
+    @apply relative inline-flex items-center px-3 py-0.5 text-[10px] font-medium tracking-wider uppercase border border-line bg-paper-card text-ink-soft rounded-ticket;
+  }
+  .ticket-label::before,
+  .ticket-label::after {
+    content: '';
+    @apply absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-paper rounded-full border border-line;
+  }
+  .ticket-label::before {
+    @apply -left-1.5;
+  }
+  .ticket-label::after {
+    @apply -right-1.5;
+  }
+
+  /* 铅笔手绘分界线 */
+  .pencil-line {
+    @apply border-t border-dashed border-line/60 my-4;
+  }
+
+  /* 竖排古籍签条 */
+  .vertical-sign {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    @apply text-[10px] tracking-shoujin text-ink-faint font-serif;
+  }
+
+  /* 宣纸卡片 */
+  .paper-card {
+    @apply bg-paper-card border border-line rounded-card transition-all duration-300 hover:border-gold/40;
+  }
+
+  /* 文具店输入框 */
+  .stationery-input {
+    @apply w-full bg-paper-input border border-line rounded-input px-4 py-2.5 text-ink text-sm font-light placeholder:text-ink-ghost focus:outline-none focus:border-gold/50 transition-colors;
+  }
+
+  /* 扁平次要按钮 */
+  .flat-btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-xs font-medium tracking-wider uppercase border border-line rounded-input text-ink-soft hover:text-ink hover:border-ink-faint transition-all duration-200;
+  }
+
+  /* 扁平主按钮 */
+  .flat-btn-primary {
+    @apply inline-flex items-center justify-center px-5 py-2 text-xs font-medium tracking-wider uppercase bg-ink text-paper rounded-input hover:bg-ink-soft transition-all duration-200;
+  }
+
+  /* 古籍页码装饰 */
+  .page-corner {
+    @apply absolute top-3 right-4 text-[9px] text-ink-ghost font-mono tracking-widest;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

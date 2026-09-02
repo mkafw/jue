@@ -2,12 +2,34 @@
 .env
 .env.local
 .env.*.local
+.env.production
 
 # Node modules
 node_modules/
+
+# Build output
+dist/
+dist-ssr/
 
 # Cloudflare Workers
 workers/.env
 workers/node_modules/
 workers/dist/
 
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Cache
+.cache/
+.parcel-cache/

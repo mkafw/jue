@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { QAView } from './components/QAView';
 import { OKRView } from './components/OKRView';
@@ -20,6 +20,24 @@ export default function App() {
   const [isGitOpen, setIsGitOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('qaos-theme') === 'dark';
+    }
+    return false;
+  });
+
+  // 同步暗色类到 <html> 并持久化
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add('dark');
+      localStorage.setItem('qaos-theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('qaos-theme', 'light');
+    }
+  }, [isDark]);
 
   const { data, loading, actions } = useQASystem();
 
@@ -149,6 +167,8 @@ export default function App() {
       toggleCreateModal={() => setIsModalOpen(true)}
       onOpenGit={() => setIsGitOpen(true)}
       onOpenSearch={() => setIsSearchOpen(true)}
+      isDark={isDark}
+      onToggleDark={() => setIsDark((v) => !v)}
     >
       {renderContent()}
       <VersionControl isOpen={isGitOpen} onClose={() => setIsGitOpen(false)} />

@@ -10,6 +10,8 @@ import {
   Home,
   Settings,
   Feather,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { ViewMode } from '../types';
 
@@ -20,6 +22,8 @@ interface LayoutProps {
   toggleCreateModal: () => void;
   onOpenGit: () => void;
   onOpenSearch: () => void;
+  isDark: boolean;
+  onToggleDark: () => void;
 }
 
 const viewTitles: Record<ViewMode, string> = {
@@ -39,6 +43,8 @@ export const Layout: React.FC<LayoutProps> = ({
   toggleCreateModal,
   onOpenGit,
   onOpenSearch,
+  isDark,
+  onToggleDark,
 }) => {
   const navItems = [
     { id: ViewMode.DASHBOARD, icon: Home, label: '卷首' },
@@ -89,13 +95,24 @@ export const Layout: React.FC<LayoutProps> = ({
           })}
         </div>
 
-        {/* 底部 Git */}
-        <button
-          onClick={onOpenGit}
-          className="w-10 h-10 rounded-card border border-line flex items-center justify-center text-ink-faint hover:text-ink hover:border-gold/40 transition-all"
-        >
-          <GitBranch size={14} strokeWidth={1.5} />
-        </button>
+        {/* 底部工具区 */}
+        <div className="flex flex-col items-center space-y-2">
+          {/* 明暗切换 */}
+          <button
+            onClick={onToggleDark}
+            title={isDark ? '切换到昼' : '切换到夜'}
+            className="w-10 h-10 rounded-card border border-line flex items-center justify-center text-ink-faint hover:text-gold hover:border-gold/40 transition-all"
+          >
+            {isDark ? <Sun size={14} strokeWidth={1.5} /> : <Moon size={14} strokeWidth={1.5} />}
+          </button>
+          {/* Git */}
+          <button
+            onClick={onOpenGit}
+            className="w-10 h-10 rounded-card border border-line flex items-center justify-center text-ink-faint hover:text-ink hover:border-gold/40 transition-all"
+          >
+            <GitBranch size={14} strokeWidth={1.5} />
+          </button>
+        </div>
       </nav>
 
       {/* 移动端底部导航 */}
@@ -131,6 +148,14 @@ export const Layout: React.FC<LayoutProps> = ({
           </div>
 
           <div className="flex items-center space-x-3">
+            {/* 移动端明暗切换 */}
+            <button
+              onClick={onToggleDark}
+              className="md:hidden w-9 h-9 rounded-card border border-line flex items-center justify-center text-ink-faint hover:text-gold transition-colors"
+            >
+              {isDark ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
+            </button>
+
             {/* 搜索 */}
             <button
               onClick={onOpenSearch}

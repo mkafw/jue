@@ -13,16 +13,19 @@ export const useQASystem = () => {
   const [failures, setFailures] = useState<Failure[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Repository Factory Logic
+  // Repository Factory: 只有明确配置了 VITE_WORKERS_URL 才走 Workers，否则用 Memory（带 mock 数据）
   const [repo] = useState<IRepository>(() => {
-    const workersUrl = import.meta.env.VITE_WORKERS_URL || 'https://qa-os-api.tiklt1.workers.dev';
-    console.log(`[QA-OS] System initializing. Mode: ${workersUrl ? 'Workers + GitHub' : 'PROTOTYPE (Memory)'}`);
-    return workersUrl ? WorkersRepository : MemoryRepository;
+    const workersUrl = import.meta.env.VITE_WORKERS_URL;
+    if (workersUrl) {
+      console.log(`[QA-OS] Mode: Workers API (${workersUrl})`);
+      return WorkersRepository;
+    }
+    console.log('[QA-OS] Mode: Memory (prototype with mock data)');
+    return MemoryRepository;
   });
 
   // Initial Load
   const refresh = useCallback(async () => {
-    // Only set loading on initial load or full refreshes
     if (questions.length === 0) setLoading(true);
     try {
       const [q, o, f] = await Promise.all([
@@ -79,20 +82,15 @@ export const useQASystem = () => {
     }
   };
 
-  // L3: OPTIMISTIC ADD QUESTION
   const addQuestion = async (question: Question) => {
-    // 1. Instant UI Feedback
     const prevQuestions = [...questions];
     setQuestions([question, ...questions]);
 
     try {
-      // 2. Async Persist
       await repo.addQuestion(question);
-      // No need to refresh, local state is valid
       return true;
     } catch (e) {
       console.error("Add Question failed", e);
-      // 3. Rollback
       setQuestions(prevQuestions);
       return false;
     }
@@ -140,14 +138,10 @@ export const useQASystem = () => {
     }
   };
 
-  // L2: OPTIMISTIC UPDATE KR
   const toggleKRStatus = async (objectiveId: string, krId: string, currentStatus: KeyResult['status']) => {
     const newStatus = currentStatus === 'Completed' ? 'Pending' : 'Completed';
-    
-    // 1. Snapshot previous state for rollback
     const previousObjectives = [...objectives];
 
-    // 2. Optimistic Update (Instant)
     setObjectives(prev => prev.map(obj => {
         if (obj.id !== objectiveId) return obj;
         return {
@@ -159,12 +153,9 @@ export const useQASystem = () => {
     }));
 
     try {
-      // 3. Perform Actual API Call
       await repo.updateKeyResult(objectiveId, krId, newStatus);
-      // No need to refresh() if successful, we are already in sync visually
     } catch (e) {
       console.error("Toggle KR failed", e);
-      // 4. Rollback on Error
       setObjectives(previousObjectives);
       return false;
     }

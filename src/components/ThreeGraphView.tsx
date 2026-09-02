@@ -12,9 +12,10 @@ interface ThreeGraphViewProps {
 
 // 螺旋参数
 const HELIX_TURNS = 2.5;       // 螺旋圈数
-const HELIX_RADIUS = 4;        // 螺旋半径
-const HELIX_HEIGHT = 14;       // 螺旋总高度（Y 轴）
+const HELIX_RADIUS = 4.5;      // 螺旋半径
+const HELIX_HEIGHT = 16;       // 螺旋总高度（Y 轴）
 const HELIX_Y_OFFSET = 0;      // Y 轴中心偏移
+const HELIX_SEGMENTS = 120;    // 骨架曲线细分段数
 
 export const ThreeGraphView: React.FC<ThreeGraphViewProps> = ({ questions, objectives, onNodeAction }) => {
   const steps = useMemo(() => {
@@ -78,17 +79,13 @@ export const ThreeGraphView: React.FC<ThreeGraphViewProps> = ({ questions, objec
   /**
    * 纯正双螺旋布局
    * 问题链（A）与目标链（B）相位差 π，绕中心轴转 HELIX_TURNS 圈
-   * 角度随 index 均匀分布，Y 轴线性下降 → 标准 DNA 双螺旋
    */
   const calculatePosition = (node: GraphNode): [number, number, number] => {
     const idx = node.index || 0;
     const total = Math.max(steps.length, 1);
-    // 角度：从 0 到 turns*2π，B 链偏移 π
     const angle = (idx / total) * HELIX_TURNS * Math.PI * 2 + (node.strand === 'B' ? Math.PI : 0);
-    // 半径：引力越大越靠近中心轴（最多收缩 30%）
     const gravity = gravityScores[node.id] || 1;
-    const radius = HELIX_RADIUS * (1 - Math.min((gravity - 1) * 0.08, 0.3));
-    // Y 轴：从顶部均匀下降到底部
+    const radius = HELIX_RADIUS * (1 - Math.min((gravity - 1) * 0.06, 0.25));
     const y = HELIX_Y_OFFSET + HELIX_HEIGHT / 2 - (idx / total) * HELIX_HEIGHT;
 
     const x = radius * Math.cos(angle);
@@ -97,30 +94,58 @@ export const ThreeGraphView: React.FC<ThreeGraphViewProps> = ({ questions, objec
     return [x, y, z];
   };
 
-  const deductionLines = useMemo(() => {
-    const lines: any[] = [];
-    const nodeMap = new Map<string, [number, number, number]>();
-    steps.forEach((n) => nodeMap.set(n.id, calculatePosition(n)));
+  /**
+   * 生成螺旋骨架曲线上的密集点（用于绘制连续的糖-磷酸骨架）
+   */
+  const generateHelixCurve = (strand: 'A' | 'B'): [number, number, number][] => {
+    const points: [number, number, number][] = [];
+    for (let i = 0; i <= HELIX_SEGMENTS; i++) {
+      const t = i / HELIX_SEGMENTS;
+      const angle = t * HELIX_TURNS * Math.PI * 2 + (strand === 'B' ? Math.PI : 0);
+      const x = HELIX_RADIUS * Math.cos(angle);
+      const z = HELIX_RADIUS * Math.sin(angle);
+      const y = HELIX_Y_OFFSET + HELIX_HEIGHT / 2 - t * HELIX_HEIGHT;
+      points.push([x, y, z]);
+    }
+    return points;
+  };
 
-    // 同层横档（A 链 ↔ B 链，类似 DNA 碱基对）
+  const strandACurve = useMemo(() => generateHelixCurve('A'), []);
+  const strandBCurve = useMemo(() => generateHelixCurve('B'), []);
+
+  /**
+   * 同层横档（DNA 碱基对）：连接同一 index 的 A 链和 B 链节点
+   */
+  const rungLines = useMemo(() => {
+    const lines: { start: [number, number, number]; end: [number, number, number] }[] = [];
     const byIndex = new Map<number, GraphNode[]>();
     steps.forEach((n) => {
       const arr = byIndex.get(n.index || 0) || [];
       arr.push(n);
       byIndex.set(n.index || 0, arr);
     });
+    const nodeMap = new Map<string, [number, number, number]>();
+    steps.forEach((n) => nodeMap.set(n.id, calculatePosition(n)));
+
     byIndex.forEach((pair) => {
       if (pair.length === 2) {
         lines.push({
-          start: nodeMap.get(pair[0].id),
-          end: nodeMap.get(pair[1].id),
-          color: '#A88C52',
-          isRung: true,
+          start: nodeMap.get(pair[0].id)!,
+          end: nodeMap.get(pair[1].id)!,
         });
       }
     });
+    return lines;
+  }, [steps, gravityScores]);
 
-    // 知识关联线
+  /**
+   * 知识关联线（跨层连接）
+   */
+  const deductionLines = useMemo(() => {
+    const lines: any[] = [];
+    const nodeMap = new Map<string, [number, number, number]>();
+    steps.forEach((n) => nodeMap.set(n.id, calculatePosition(n)));
+
     steps.forEach((source) => {
       const targets = [...(source.linkedQuestionIds || []), ...(source.linkedOKRIds || [])];
       targets.forEach((tid) => {
@@ -129,7 +154,6 @@ export const ThreeGraphView: React.FC<ThreeGraphViewProps> = ({ questions, objec
             start: nodeMap.get(source.id),
             end: nodeMap.get(tid),
             color: source.strand === 'A' ? '#A88C52' : '#A194AD',
-            isRung: false,
           });
         }
       });
@@ -141,13 +165,13 @@ export const ThreeGraphView: React.FC<ThreeGraphViewProps> = ({ questions, objec
     <div className="w-full h-full bg-paper">
       <Canvas>
         <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[0, 2, 16]} fov={50} />
+          <PerspectiveCamera makeDefault position={[0, 2, 17]} fov={50} />
           <OrbitControls
             enableDamping
             dampingFactor={0.05}
             target={[0, 0, 0]}
             minDistance={8}
-            maxDistance={30}
+            maxDistance={35}
           />
           <ambientLight intensity={0.9} />
           <directionalLight position={[10, 10, 10]} intensity={0.5} color="#F6F3F8" />
@@ -155,24 +179,55 @@ export const ThreeGraphView: React.FC<ThreeGraphViewProps> = ({ questions, objec
 
           {/* 中央脊柱 */}
           <mesh position={[0, 0, 0]}>
-            <cylinderGeometry args={[0.03, 0.03, HELIX_HEIGHT + 2, 8]} />
-            <meshStandardMaterial color="#A88C52" transparent opacity={0.35} roughness={0.8} />
+            <cylinderGeometry args={[0.02, 0.02, HELIX_HEIGHT + 2, 8]} />
+            <meshStandardMaterial color="#A88C52" transparent opacity={0.2} roughness={0.8} />
           </mesh>
 
-          {/* 关联连线 */}
+          {/* DNA 双螺旋骨架 —— 两条连续的糖-磷酸链 */}
+          <Line
+            points={strandACurve}
+            color="#A88C52"
+            lineWidth={2}
+            transparent
+            opacity={0.7}
+          />
+          <Line
+            points={strandBCurve}
+            color="#A194AD"
+            lineWidth={2}
+            transparent
+            opacity={0.7}
+          />
+
+          {/* 同层横档（碱基对） */}
           <group>
-            {deductionLines.map((line, i) => (
+            {rungLines.map((line, i) => (
               <Line
-                key={`line-${i}`}
+                key={`rung-${i}`}
                 points={[line.start, line.end]}
-                color={line.color}
-                lineWidth={line.isRung ? 1 : 0.5}
+                color="#C4A96E"
+                lineWidth={1.5}
                 transparent
-                opacity={line.isRung ? 0.5 : 0.3}
+                opacity={0.5}
               />
             ))}
           </group>
 
+          {/* 知识关联线（跨层） */}
+          <group>
+            {deductionLines.map((line, i) => (
+              <Line
+                key={`link-${i}`}
+                points={[line.start, line.end]}
+                color={line.color}
+                lineWidth={0.5}
+                transparent
+                opacity={0.25}
+              />
+            ))}
+          </group>
+
+          {/* 节点卡片 —— 缩小尺寸，沿螺旋分布 */}
           <group>
             {steps.map((node) => (
               <ThreeNoteCard
@@ -180,6 +235,7 @@ export const ThreeGraphView: React.FC<ThreeGraphViewProps> = ({ questions, objec
                 node={node}
                 gravity={gravityScores[node.id]}
                 position={calculatePosition(node)}
+                size={0.55}
                 onClick={(id, type) => onNodeAction?.(id, type, 'SELECT')}
               />
             ))}
@@ -188,7 +244,7 @@ export const ThreeGraphView: React.FC<ThreeGraphViewProps> = ({ questions, objec
       </Canvas>
 
       <div className="absolute bottom-4 left-4 text-ink-faint text-[10px] tracking-widest pointer-events-none">
-        拖拽旋转 · 双螺旋引力场
+        拖拽旋转 · DNA 双螺旋知识场
       </div>
     </div>
   );

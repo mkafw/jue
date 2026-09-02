@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== 设计令牌：浅色主题（宣纸白） ===== */
+:root {
+  --color-paper: 246 243 248;
+  --color-paper-card: 239 235 242;
+  --color-paper-deep: 232 226 237;
+  --color-paper-input: 250 248 252;
+  --color-ink: 53 48 58;
+  --color-ink-soft: 107 100 115;
+  --color-ink-faint: 155 148 163;
+  --color-ink-ghost: 196 189 204;
+  --color-gold: 168 140 82;
+  --color-gold-soft: 196 169 110;
+  --color-gold-faint: 232 220 196;
+  --color-cinnabar: 193 44 31;
+  --color-wisteria: 161 148 173;
+  --color-celadon: 122 155 138;
+  --color-line: 216 210 222;
+}
+
+/* ===== 设计令牌：暗色主题（暮山紫夜） ===== */
+:root.dark {
+  --color-paper: 24 21 31;
+  --color-paper-card: 32 28 41;
+  --color-paper-deep: 40 35 51;
+  --color-paper-input: 28 24 36;
+  --color-ink: 232 226 237;
+  --color-ink-soft: 181 173 192;
+  --color-ink-faint: 138 130 150;
+  --color-ink-ghost: 90 84 102;
+  --color-gold: 201 169 110;
+  --color-gold-soft: 217 191 140;
+  --color-gold-faint: 70 58 40;
+  --color-cinnabar: 220 80 70;
+  --color-wisteria: 161 148 173;
+  --color-celadon: 122 155 138;
+  --color-line: 58 52 71;
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
@@ -11,8 +49,8 @@
   body {
     @apply bg-paper text-ink font-sans font-light;
     background-image:
-      radial-gradient(circle at 20% 30%, rgba(168, 140, 82, 0.02) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(161, 148, 173, 0.02) 0%, transparent 50%);
+      radial-gradient(circle at 20% 30%, rgb(var(--color-gold) / 0.02) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgb(var(--color-wisteria) / 0.02) 0%, transparent 50%);
   }
 
   ::selection {

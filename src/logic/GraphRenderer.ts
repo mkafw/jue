@@ -157,7 +157,6 @@ export class GraphRenderer {
       this.rotation += this.momentum;
       this.momentum *= this.friction;
 
-      const flowDir = this.momentum !== 0 ? Math.sign(this.momentum) : 1;
       if (Math.abs(this.momentum) < 0.0001) {
         this.rotation += this.baseVelocity;
       }
